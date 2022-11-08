@@ -1,0 +1,46 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /e # 启动的根路径 如：localhost：8080/xx/你的请求
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB #单个文件上传大小
+      max-request-size: 500MB # 上传文件总大小
+  profiles:
+    active: '@profile.active@' # 版本控制，同maven的profile一起控制
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.6.80:3307/e?characterEncodeing=utf-8&useSSL=false&serverTimezone=GMT
+    username: root
+    password: mysql
+    type: com.alibaba.druid.pool.DruidDataSource
+  redis:
+    database: 0
+    host: 192.168.6.80
+    port: 6379
+    password:
+#  thymeleaf:
+#    cache: false #配置Thymeleaf缓存，生产环境开启，默认开启
+
+
+# mybatis-plus配置
+mybatis-plus:
+  type-aliases-package: com.itfuture.pojo # 找别名
+  mapper-locations: classpath:mybatis/*.xml #映射
+  configuration:
+    lazy-loading-enabled: true #懒加载
+    aggressive-lazy-loading: false #积极懒加载
+
+# orika:持久化层对应的实体对象与数据传输对象之间的映射工具
+orika:
+  enabled: true
+  use-builtin-converters: true
+  use-auto-mapping: true
+  map-nulls: false
+  dump-state-on-exception: false
+  favor-extension: false
+  capture-field-context: false
+
+
