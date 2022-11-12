@@ -2,6 +2,7 @@ package com.itfuture.mapper;
 
 
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.itfuture.pojo.Courier;
 
 import java.util.Date;
@@ -14,7 +15,7 @@ import java.util.Map;
  * @Version 1.0
  * @Date Created in 2022-10-24 16:41
  */
-public interface BaseCourierDao {
+public interface CourierDao extends BaseMapper<Courier> {
 
     /**
      * 用于查询数据库所有快递员（总数+日注册新增）
@@ -43,7 +44,7 @@ public interface BaseCourierDao {
      * @param courier 要录入的快递员对象
      * @return 插入结果
      */
-     boolean insert (Courier courier);
+     //boolean insert (Courier courier);
 
     /**
      * 快递员的修改

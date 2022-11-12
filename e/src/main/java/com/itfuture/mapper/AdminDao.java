@@ -11,7 +11,7 @@ import java.util.Date;
  * @Version 1.0
  * @Date Created in 2022-10-24 16:41
  */
-public interface BaseAdminDao extends BaseMapper<Eadmin> {
+public interface AdminDao extends BaseMapper<Eadmin> {
 
     /**
      * 根据用户名更新登陆时间和登录Ip

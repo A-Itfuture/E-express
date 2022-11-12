@@ -2,6 +2,7 @@ package com.itfuture.mapper;
 
 
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.itfuture.pojo.Express;
 import org.springframework.dao.DuplicateKeyException;
 
@@ -14,7 +15,7 @@ import java.util.Map;
  * @Version 1.0
  * @Date Created in 2021-12-31 14:50
  */
-public interface BaseExpressDao {
+public interface ExpressDao extends BaseMapper<Express  > {
     /**
      * 用于查询数据库所有快递（总数+新增），待取件快递（总数+新增）
      * @return [{size:总数，day:新增},{size:总数，day:新增}]
@@ -68,7 +69,7 @@ public interface BaseExpressDao {
      * @param e 要录入的快递对象
      * @return 录入结果
      */
-     boolean insert(Express e) throws DuplicateKeyException;
+     //boolean insert(Express e) throws DuplicateKeyException;
 
     /**
      * 快递的修改

@@ -15,7 +15,7 @@ import java.util.Map;
  * @Version 1.0
  * @Date Created in 2022-10-24 16:41
  */
-public interface BaseUserDao extends BaseMapper<User> {
+public interface UserDao extends BaseMapper<User> {
 
     /**
      * 用于查询数据库所有用户（总数+日注册新增）
