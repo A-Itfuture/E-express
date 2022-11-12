@@ -12,10 +12,18 @@ spring:
     active: '@profile.active@' # 版本控制，同maven的profile一起控制
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://192.168.6.80:3307/e?characterEncodeing=utf-8&useSSL=false&serverTimezone=GMT
+    url: jdbc:mysql://192.168.6.80:3307/e?characterEncodeing=utf-8&useSSL=false&serverTimezone=GMT&allowPublicKeyRetrieval=true
     username: root
     password: mysql
     type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      max-wait: 60000
+      max-active: 20
+      initial-size: 5
+      min-idle: 5
+      max-pool-prepared-statement-per-connection-size: 20
+      min-evictable-idle-time-millis: 300000
+
   redis:
     database: 0
     host: 192.168.6.80
@@ -24,6 +32,18 @@ spring:
 #  thymeleaf:
 #    cache: false #配置Thymeleaf缓存，生产环境开启，默认开启
 
+# swagger
+swagger:
+  base-package: 'com.itfuture.controller'
+  base-path: '/**'
+  title: '快递E站服务接口'
+  description: '快递E站后端服务接口文档'
+  version: '1.0'
+  license-url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
+  license: 'The Apache License'
+  contact:
+    name: '王小虎'
+    email: 'itfuture03@163.com'
 
 # mybatis-plus配置
 mybatis-plus:
@@ -32,6 +52,7 @@ mybatis-plus:
   configuration:
     lazy-loading-enabled: true #懒加载
     aggressive-lazy-loading: false #积极懒加载
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  #日志支持
 
 # orika:持久化层对应的实体对象与数据传输对象之间的映射工具
 orika:
