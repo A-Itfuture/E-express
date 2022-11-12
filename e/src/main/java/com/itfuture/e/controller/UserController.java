@@ -28,18 +28,13 @@ public class UserController {
     @ApiOperation("查询用户总量以及当天新增用户量")
     @GetMapping("/console")
     public ResponseEntity console(HttpServletRequest req, HttpServletResponse resp){
-        List<Map<String, Integer>> data = userService.console();
+        List<Map<String, Long>> data = userService.console();
         return ResponseEntity.ok(data);
     }
 
     @ApiOperation("获取所有用户信息")
     @GetMapping("/list")
     public ResponseEntity list(Integer offset,Integer pageNumber,HttpServletRequest request){
-        ////1.    获取查询数据的起始索引值
-        //int offset = Integer.parseInt(request.getParameter("offset"));
-        ////2.    获取当前页要查询的数据量
-        //int pageNumber = Integer.parseInt(request.getParameter("pageNumber"));
-
         return ResponseEntity.ok(userService.findList(true,offset,pageNumber));
     }
 

@@ -13,7 +13,7 @@ import java.sql.Timestamp;
  * @date： 2022/11/04 11:28
  */
 @Data
-@TableName("user")
+@TableName(value = "user")
 public class User {
     @TableId(value = "id",type = IdType.AUTO)
     private int id;

@@ -18,7 +18,7 @@ public interface UserService {
      * 用于查询数据库所有用户（总数+日注册新增）
      * @return
      */
-    List<Map<String,Integer>> console();
+    List<Map<String,Long>> console();
 
     /**
      * 用于查询所有用户

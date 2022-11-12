@@ -6,6 +6,7 @@ import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.converter.BidirectionalConverter;
+import ma.glasnost.orika.impl.DefaultMapperFactory;
 import ma.glasnost.orika.metadata.Type;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,10 +21,10 @@ import java.sql.Timestamp;
 @Component
 public class UserMapperFactory {
 
-    @Autowired
-    private MapperFactory mapperFactory;
+    private static MapperFactory mapperFactory;
 
-    public MapperFacade getMapperFacade(){
+    static {
+        mapperFactory = new DefaultMapperFactory.Builder().build();
         mapperFactory.getConverterFactory().registerConverter("loginTimeConvert", new BidirectionalConverter<Timestamp,String>() {
             @Override
             public String convertTo(Timestamp timestamp, Type<String> type, MappingContext mappingContext) {
@@ -53,7 +54,9 @@ public class UserMapperFactory {
                 .fieldMap("loginTime","loginTime").converter("loginTimeConvert").add()
                 .byDefault()
                 .register();
+    }
 
+    public MapperFacade getMapperFacade(){
         return mapperFactory.getMapperFacade();
     }
 }

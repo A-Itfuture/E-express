@@ -21,8 +21,8 @@ public interface UserDao extends BaseMapper<User> {
      * 用于查询数据库所有用户（总数+日注册新增）
      * @return
      */
-    @Select("SELECT COUNT(ID) data_size,COUNT(TO_DAYS(CREATETIME)=TO_DAYS(NOW()) OR NULL) data_day FROM USER")
-    List<Map<String,Integer>> console();
+    @Select("SELECT COUNT(ID) data_size,COUNT(TO_DAYS(CREATETIME)=TO_DAYS(NOW()) OR NULL) data_day FROM user")
+    List<Map<String,Long>> console();
 
     /**
      * 用于分页查询所有用户
@@ -30,7 +30,7 @@ public interface UserDao extends BaseMapper<User> {
      * @param pageNumber 页查询的数量
      * @return 用户的集合
      */
-    @Select("SELECT * FROM USER LIMIT #{offset},#{pageNumber}")
+    @Select("SELECT * FROM user LIMIT #{offset},#{pageNumber}")
     List<User> findAllLimit(int offset, int pageNumber);
     //
     ///**

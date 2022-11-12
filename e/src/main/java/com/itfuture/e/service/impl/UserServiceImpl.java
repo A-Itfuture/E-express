@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    public List<Map<String,Integer>> console(){
+    public List<Map<String,Long>> console(){
         return userDao.console();
     }
 
@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public TableData findList(boolean limit, Integer offset, Integer pageNumber) {
-        List<User> list = new ArrayList<>();
+        List<User> list;
         if (limit){
             list = userDao.findAllLimit(offset, pageNumber);
         }else {
@@ -61,8 +61,8 @@ public class UserServiceImpl implements UserService {
 
         List<UserVo> userVoList = userMapperFactory.getMapperFacade().mapAsList(list, UserVo.class);
 
-        List<Map<String, Integer>> console = console();
-        Integer total = console.get(0).get("data_size");
+        List<Map<String, Long>> console = console();
+        Integer total = console.get(0).get("data_size").intValue();
         //4.    将集合封装为 bootstrap-table识别的格式
         TableData<UserVo> data = new TableData<>();
         data.setRows(userVoList);
