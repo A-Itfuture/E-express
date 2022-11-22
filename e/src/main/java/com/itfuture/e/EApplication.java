@@ -7,7 +7,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @SpringBootApplication
 @EnableSwagger2
-@MapperScan("com.itfuture.e.mapper")
+@MapperScan("com.itfuture.e.dao")
 public class EApplication {
 
     public static void main(String[] args) {

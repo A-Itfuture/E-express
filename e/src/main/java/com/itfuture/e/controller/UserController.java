@@ -1,123 +1,83 @@
 package com.itfuture.e.controller;
 
 
+import com.itfuture.e.intercept.NotControllerResponseAdvice;
+import com.itfuture.e.pojo.vo.ResultVo;
+import com.itfuture.e.pojo.vo.UserVo;
+import com.itfuture.e.valid.addUser;
 import com.itfuture.e.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
-/**
+/**用户管理控制器
  * @author： wxh
  * @version：v1.0
  * @date： 2022/11/06 15:49
  */
 @Api(tags = "用户管理控制器")
+@Slf4j
 @RestController("/user")
 public class UserController {
     @Autowired
     private UserService userService;
 
     @ApiOperation("查询用户总量以及当天新增用户量")
-    @GetMapping("/console")
-    public ResponseEntity console(HttpServletRequest req, HttpServletResponse resp){
-        List<Map<String, Long>> data = userService.console();
-        return ResponseEntity.ok(data);
+    @GetMapping("/userConsole")
+    public List<Map<String, Long>> userConsole(){
+        return userService.console();
+    }
+
+    @ApiOperation("分页获取所有用户信息")
+    @GetMapping("/userListPage")
+    public ResultVo listPage(@RequestParam(required = false,defaultValue = "0") Integer offset,
+                             @RequestParam(required = false,defaultValue = "5") Integer pageNumber){
+        return new ResultVo(userService.findList(true,offset,pageNumber));
     }
 
     @ApiOperation("获取所有用户信息")
-    @GetMapping("/list")
-    public ResponseEntity list(Integer offset,Integer pageNumber,HttpServletRequest request){
-        return ResponseEntity.ok(userService.findList(true,offset,pageNumber));
+    @GetMapping("/userList")
+    public ResultVo list(){
+        return new ResultVo(userService.findList(false,0,0));
     }
 
-    //@PostMapping("/addUser")
-    //public String insert(HttpServletRequest request, HttpServletResponse response){
-    //    //1 获取前端传参
-    //    String username = request.getParameter("userName");
-    //    String userPhone = request.getParameter("userPhone");
-    //    String cardId = request.getParameter("cardId");
-    //    String password = request.getParameter("passWord");
-    //    User user = new User(username, userPhone, password, cardId);
-    //    //2 调用Service
-    //    boolean flag = UserService.insert(user);
-    //    Message msg = new Message();
-    //    //3 封装结果信息
-    //    if(flag){
-    //        //录入成功
-    //        msg.setStatus(0);
-    //        msg.setResult("添加用户成功!");
-    //    }else{
-    //        //录入失败
-    //        msg.setStatus(-1);
-    //        msg.setResult("添加用户失败!");
-    //    }
-    //    //4 转Json响应
-    //    String json = JSONUtil.toJSON(msg);
-    //    return json;
-    //}
-    //
-    //@ResponseBody("/find")
-    //public String find(HttpServletRequest request,HttpServletResponse response){
-    //    String oldPhone = request.getParameter("oldPhone");
-    //    User user = UserService.findByUserPhone(oldPhone);
-    //    Message msg = new Message();
-    //    if(user == null){
-    //        msg.setStatus(-1);
-    //        msg.setResult("手机号不存在");
-    //    }else{
-    //        msg.setStatus(0);
-    //        msg.setResult("查询成功");
-    //        msg.setData(user);
-    //    }
-    //    String json = JSONUtil.toJSON(msg);
-    //    return json;
-    //}
-    //
-    //@ResponseBody("/update")
-    //public String update(HttpServletRequest request,HttpServletResponse response){
-    //    //获取参数
-    //    String id = request.getParameter("id");
-    //    String oldPhone = request.getParameter("oldPhone");
-    //    String userName = request.getParameter("userName");
-    //    String userPhone = request.getParameter("userPhone");
-    //    String password = request.getParameter("password");
-    //    String cardId = request.getParameter("cardId");
-    //    User user = new User(userName, userPhone, password, cardId);
-    //    boolean flag = false;
-    //    // 调用service
-    //    if (oldPhone!=null){
-    //        if (oldPhone.equals(userPhone)){
-    //            flag = UserService.updateNoPhone(Integer.parseInt(id), user);
-    //        }else {
-    //            flag = UserService.update(Integer.parseInt(id), user);
-    //        }
-    //    }
-    //    Message msg = new Message();
-    //    if (flag){
-    //        msg.setStatus(0);
-    //        msg.setResult("修改成功");
-    //    }else {
-    //        msg.setStatus(-1);
-    //        msg.setResult("修改失败");
-    //    }
-    //
-    //    //转Json
-    //    String json = JSONUtil.toJSON(msg);
-    //    return json;
-    //}
-    //
-    //@DeleteMapping("/deleteUser")
-    //public ResponseEntity delete(HttpServletRequest request,HttpServletResponse response){
-    //    int id = Integer.parseInt(request.getParameter("id"));
-    //    boolean flag = userService.delete(id);
-    //    return new ResponseEntity.status();
-    //}
+    @ApiOperation("新增用户")
+    @PostMapping("/addUser")
+    public ResultVo addUser(@ApiParam("用户信息实体") @Validated(addUser.class) @RequestBody UserVo userVo){
+        return new ResultVo(userService.insert(userVo));
+    }
+
+    @ApiOperation("根据用户手机号查询用户")
+    @PostMapping("/findUserByUserPhone")
+    public UserVo findByUserPhone(@ApiParam("查询条件：手机号") @RequestBody  String oldPhone){
+        //TODO 前端保证oldPhone不为空
+        log.info(oldPhone);
+        return userService.findByUserPhone(oldPhone);
+    }
+
+    @ApiOperation("更新用户信息")
+    @PutMapping("/updateUser")
+    public boolean updateUser(@ApiParam("更改用户信息的实体") @Validated(addUser.class) @RequestBody UserVo userVo){
+        return userService.updateUser(userVo);
+    }
+
+    @ApiOperation("更新用户登陆时间")
+    @PutMapping("/updateUserLoginTime/{id}")
+    public boolean updateLoginTime(@ApiParam("更新的用户id") @PathVariable("id") Integer id){
+        return userService.updateLoginTime(id);
+    }
+
+    @ApiOperation("根据id删除用户")
+    @DeleteMapping("/deleteUser/{id}")
+    @NotControllerResponseAdvice
+    public boolean  deleteUser(@PathVariable("id") Integer id){
+        return userService.deleteUserById(id);
+    }
 }

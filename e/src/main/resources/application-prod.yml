@@ -88,12 +88,3 @@ com:
       valid:
         ListValue:
           message: 必须提交值
-
-# 短信发送参数
-txsms:
-  AppId: 1400617366 # 你的系统默认应用SDK AppID
-  AppKey: "33b78b41201c1615ac8371dea7ffc418" # 你的系统默认应用App Key
-  TemplateId1: 1264448 # 你的正文模板ID
-  TemplateId2: 1265837 # 你的正文模板ID
-  signName: "Itfuture栈" # 你的签名内容
-

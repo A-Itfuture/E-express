@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itfuture.e.dao.ExpressDao">
+    <sql id="selectSql">
+        SELECT *
+        FROM express
+    </sql>
+
+    <select id="console" resultType="java.util.Map">
+        SELECT COUNT(id)                                                       data1_size,
+               COUNT(TO_DAYS(in_time) = TO_DAYS(NOW()) OR NULL)                data1_day,
+               COUNT(status = 0 OR NULL)                                       data2_size,
+               COUNT(TO_DAYS(in_time) = TO_DAYS(NOW()) AND status = 0 OR NULL) data2_day
+        FROM express
+    </select>
+
+    <select id="findAllLimit" resultType="com.itfuture.e.pojo.Express">
+        <include refid="selectSql"></include>
+        LIMIT #{offset},#{pageNumber}
+    </select>
+
+    <select id="findByNumber" resultType="com.itfuture.e.pojo.Express" parameterType="java.lang.String">
+        <include refid="selectSql"></include>
+        <where>
+            number = #{number}
+        </where>
+    </select>
+
+    <select id="findByCode" resultType="com.itfuture.e.pojo.Express" parameterType="java.lang.String">
+        <include refid="selectSql"></include>
+        <where>
+            code = #{code}
+        </where>
+    </select>
+
+    <select id="findBySysPhone" resultType="com.itfuture.e.pojo.Express" parameterType="java.lang.String">
+        <include refid="selectSql"></include>
+        <where>
+            sys_phone = #{sysPhone}
+        </where>
+    </select>
+
+    <select id="findByUserPhone" resultType="com.itfuture.e.pojo.Express" parameterType="java.lang.String">
+        <include refid="selectSql"></include>
+        <where>
+            user_phone = #{userPhone}
+        </where>
+    </select>
+    <select id="findByUserPhoneAndStatus" resultType="com.itfuture.e.pojo.Express">
+        <include refid="selectSql"></include>
+        <where>
+            user_phone = #{userPhone} AND status = #{status}
+        </where>
+    </select>
+
+    <update id="updateStatus" parameterType="java.lang.String">
+        UPDATE express
+        SET status=1,
+            out_time=NOW() + INTERVAL 8 HOUR,
+            code=NULL
+        WHERE code = #{code}
+    </update>
+
+
+</mapper>

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.sql.Timestamp;
+import java.util.Objects;
 
 /**
  * @author： wxh
@@ -23,4 +24,22 @@ public class User {
     private Timestamp createTime;
     private Timestamp loginTime;
     private String cardId;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        User user = (User) o;
+        return id == user.id && Objects.equals(userName, user.userName) && Objects.equals(userPhone, user.userPhone) && Objects.equals(password, user.password) && Objects.equals(createTime, user.createTime) && Objects.equals(loginTime, user.loginTime) && Objects.equals(cardId, user.cardId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, userName, userPhone, password, createTime, loginTime, cardId);
+    }
 }
