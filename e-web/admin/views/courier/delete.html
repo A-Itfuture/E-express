@@ -50,24 +50,44 @@
 	<script src="/qrcode/jquery2.1.4.js"></script>
 	<script src="/layer/layer.js"></script>
 	<script>
+		var token=window.localStorage.getItem("admin");
+        $.ajaxSetup({ //发送请求前触发
+            contentType:'application/json',
+            dataType:'json',
+            beforeSend: function (xhr) { //可以设置自定义标头
+                console.log("ajax beforesend token:", token)
+                xhr.setRequestHeader('Authorization', "Bearer "+token);
+            }
+        })
+
+		
 		$(".header:eq(1),.content:eq(1)").hide();
 		var userId = null;
 		$(function () {
 			$("#find").click(function () {
 				var windowId = layer.load();
 				var oldPhone = $("#oldPhone").val();
-				$.getJSON("/courier/find.do",{oldPhone:oldPhone},function (data) {
-					layer.close(windowId);
-					layer.msg(data.result);
-					if (data.status == 0){
-						$(".header:eq(1),.content:eq(1)").fadeIn(1000);
-						userId = data.data.id;
-						$("input:eq(1)").val(data.data.userName);
-						$("input:eq(2)").val(data.data.userPhone);
-						$("input:eq(3)").val(data.data.cardId);
-						$("input:eq(4)").val(data.data.express_Count);
-						$("input:eq(5)").val(data.data.password);
-						$("input").prop("disabled",true);
+				$.ajax({
+					type:'post',
+					url:"http://localhost:8080/e/courier/findCourierByUserPhone",
+					contentType:'application/json',
+					data:oldPhone,
+					success:function(data){
+						layer.close(windowId);
+						if (data.code == 200){
+							layer.msg(data.msg);
+							$(".header:eq(1),.content:eq(1)").fadeIn(1000);
+							userId = data.data.id;
+							$("input:eq(0)").val(oldPhone);
+							$("input:eq(1)").val(data.data.userName);
+							$("input:eq(2)").val(data.data.userPhone);
+							$("input:eq(3)").val(data.data.cardId);
+							$("input:eq(4)").val(data.data.expressCount);
+							$("input:eq(5)").val(data.data.password);
+							$("input").prop("disabled",true);
+						}else{
+							layer.msg(data.data);
+						}
 					}
 				});
 			});
@@ -75,13 +95,19 @@
 
 		$("#delete").click(function () {
 			var windowId = layer.load();
-			$.getJSON("/courier/delete.do",{id:userId},function (data) {
-				layer.close(windowId);
-				layer.msg(data.result);
-				if (data.status == 0){
-					$(".header:eq(1),.content:eq(1)").hide();
+			var id = userId;
+			$.ajax({
+				type:'delete',
+				url:'http://localhost:8080/e/courier/deleteCourier/'+id,
+				success:function(data){
+					layer.close(windowId);
+					layer.msg("删除成功");
+					if (data){
+						$(".header:eq(1),.content:eq(1)").hide();
+					}
 				}
 			});
+			
 		});
 
 	</script>

@@ -17,9 +17,16 @@
 	<!-- TODO: 使用bootstrap-table插件分页 -->
 	<table id="user_list"></table>
 	<script>
+		var token=window.localStorage.getItem("admin");
+	 $.ajaxSetup({ //发送请求前触发
+		beforeSend: function (xhr) { //可以设置自定义标头
+			console.log("ajax beforesend token:", token)
+			xhr.setRequestHeader('Authorization', "Bearer "+token);
+		}
+	}) 
 		$(function(){
 			$("#user_list").bootstrapTable({
-				url:"http://localhost:8080/e/user/list",//数据地址
+				url:"http://localhost:8080/e/user/userListPage",//数据地址
 				striped:true,//是否显示行的间隔
 				pageNumber:1,//初始化加载第几页
 				pagination:true,//是否分页

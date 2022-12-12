@@ -129,7 +129,17 @@
     <script>
      var element = layui.element;
     </script>
-    <script>
+    <script  type="text/javascript">
+        var token=window.localStorage.getItem("admin");
+        $.ajaxSetup({ //发送请求前触发
+            contentType:'application/json',
+            dataType:'json',
+            beforeSend: function (xhr) { //可以设置自定义标头
+                console.log("ajax beforesend token:", token)
+                xhr.setRequestHeader('Authorization', "Bearer "+token);
+            }
+        }) 
+        
         // $("按钮选择器").click(function () {
         //     //1. 先使用layer，弹出load(提示加载中)
         //     var windowId = layer.load();
@@ -143,26 +153,62 @@
         // });
         // 1. ajax与服务器交互
         $(function () {
-            $.post("/user/console.do",null,function (data) {
-                if (data.status === 0){
-                    $("#user_size").html(data.data[0].data_size);
-                    $("#user_day").html(data.data[0].data_day);
+            $.ajax({
+                type:'get',
+                url:'http://localhost:8080/e/user/userConsole',
+                success:function(data){
+                    if(data.code==200){
+                        $("#user_size").html(data.data[0].data_size);
+                        $("#user_day").html(data.data[0].data_day);
+                        // $("#adminName").text(data.data.userName)
+                    }else{
+                        layer.msg(data.data)
+                        window.location.href="/admin/login.html"
+                    }
+                },
+                error:function(data){
+                    layer.msg("系统出错");
+                    window.location.href="/admin/500.html"
                 }
-            },"JSON");
-            $.post("/courier/console.do",null,function (data) {
-                if (data.status === 0){
+            })
+            
+            // $.ajax({
+            //     type:'get',
+            //     url:'http://localhost:8080/e/user/userConsole',
+            //     success:function (data) {
+                    
+            //         layer.msg(data.code)
+            //         if (data.code === 200){
+            //             $("#user_size").html(data.data[0].data_size);
+            //             $("#user_day").html(data.data[0].data_day);
+            //             }
+            //         },
+            //         error:function(data){
+                       
+            //         }
+            // })
+
+          
+            $.get("http://localhost:8080/e/courier/courierConsole",null,function (data) {
+                if (data.code === 200){
                     $("#courier_size").html(data.data[0].data_size);
                     $("#courier_day").html(data.data[0].data_day);
                 }
             },"JSON");
-            $.post("/express/console.do",null,function (data) {
-                if (data.status === 0){
-                    $("#data1_size").html(data.data[0].data1_size);
-                    $("#data1_day").html(data.data[0].data1_day);
-                    $("#data2_size").html(data.data[1].data2_size);
-                    $("#data2_day").html(data.data[1].data2_day);
+
+            $.ajax({
+                type:"get",
+                url:'http://localhost:8080/e/express/expressConsole',
+                success:function (data) {
+                    if (data.code === 200){
+                        $("#data1_size").html(data.data[0].data1_size);
+                        $("#data1_day").html(data.data[0].data1_day);
+                        $("#data2_size").html(data.data[0].data2_size);
+                        $("#data2_day").html(data.data[0].data2_day);
+                    }
                 }
-            },"JSON");
+            })
+            
         });
 
     </script>

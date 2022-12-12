@@ -58,28 +58,66 @@
         ,layer = layui.layer;
     </script>
     <script>
+      var token=window.localStorage.getItem("admin");
+        $.ajaxSetup({ //发送请求前触发
+            contentType:'application/json',
+            dataType:'json',
+            beforeSend: function (xhr) { //可以设置自定义标头
+                console.log("ajax beforesend token:", token)
+                xhr.setRequestHeader('Authorization', "Bearer "+token);
+            }
+        }) 
+
+        var sysUserphone ="";
         $(function(){
+          $.ajax({
+          type:'post',
+          url:'http://localhost:8080/e/admin/adminInfo',
+          success:function(data){
+              if(data.code==200){
+                  sysUserphone = data.data.userPhone;
+              }else{
+                  layer.msg(data.data)
+                  window.location.href="/admin/login.html"
+              }
+              },
+              error:function(data){
+                  layer.msg("系统出错");
+                  window.location.href="/admin/500.html"
+          }
+          })
+
             $("#form").submit(function(){
                 var windowId = layer.load();
                 var number = $("input:eq(0)").val();
                 var company = $("input:eq(1)").val();
                 var username = $("input:eq(2)").val();
                 var userPhone = $("input:eq(3)").val();
-                $.post("/express/insert.do",{
+                var express = {
                     number:number,
                     company:company,
-                    username:username,
-                    userPhone:userPhone
-                },function(data){
+                    userName:username,
+                    userPhone:userPhone,
+                    sysPhone:sysUserphone
+                }
+                $.ajax({
+                  type:'post',
+                  url:'http://localhost:8080/e/express/addExpress',
+                  data:JSON.stringify(express),
+                  contentType:'application/json',
+                  success:function(data){
                     layer.close(windowId);
-                    layer.msg(data.result);
-                    if(data.status == 0){
-                        //录入成功
-                        $("input").val("");
-                        $("input:eq(1)").val("顺丰速运");
+                    layer.msg(data.msg);
+                    if(data.code == 200){
+                      //录入成功
+                      $("input").val("");
+                      $("input:eq(1)").val("顺丰速运");
                     }else{
-                        //录入失败
+                      //录入失败
+                      layer.msg(data.data);
+                        
                     }
+                  }
                 });
 
                 return false;

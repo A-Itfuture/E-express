@@ -167,7 +167,7 @@
 			<div class="checkStateTxt">未认证</div>
 			
 			<!-- 按钮组 -->
-			<div class="checkBtn userRegBtn">新用户认证</div>
+			<div id="userCheck" class="checkBtn userRegBtn">新用户认证</div>
 			<div class="checkprompt">认证通过开启信息化校园快递</div>
 		</div>
 
@@ -185,13 +185,17 @@
 						<input type="text" id="phone" class="commonInput" name="phone" placeholder="请输入你的手机号码...">
 					</div>
 					<div class="inputTypeCont">
+						<div class="inputTitle">身份证</div>
+						<input type="text" id="cardId" class="commonInput" name="cardId" placeholder="请输入你的身份证号码...">
+					</div>
+					<div class="inputTypeCont">
 						<div class="inputTitle">密码</div>
 						<input type="text" id="password" class="commonInput" name="password" placeholder="请输入你的密码">
 					</div>
 					<div class="inputTypeCont">
 						<div class="inputTitle">短信</div>
 						<input type="text" id="msg" class="verifiInput" name="msg" placeholder="请输入验证码...">
-						<input type="button" class="verifiBtn" value="发送验证码">
+						<input type="button" id="sendMsg" class="verifiBtn" onclick="sendMessage1()" value="发送验证码">
 					</div>
 					
 				</div>
@@ -207,8 +211,170 @@
 		</div>
 	</div>
 </div>
-
+<script src="layer/layer.js"></script>
 <script type="text/javascript">
+	var token=window.localStorage.getItem("token");
+	console.log(token)
+	 $.ajaxSetup({ //发送请求前触发
+		contentType:'application/json',
+		dataType:'json',
+		beforeSend: function (xhr) { //可以设置自定义标头
+			console.log("ajax beforesend token:", token)
+			xhr.setRequestHeader('Authorization', "Bearer "+token);
+		}
+	})  
+	var user;
+	var windowId = layer.load();
+	$(function(){
+		$.ajax({
+			type:'post',
+			url:'http://localhost:8080/e/wxUser/userInfo',
+			success:function(data){
+					userPhone = data.data;
+					if(data.code == 200){
+						user = data.data;
+						layer.close(windowId);
+						// layer.msg("欢迎您："+userPhone);
+						if(data.data.userName!="--"){
+							$(".checkStateTxt").text("已认证")
+							$("#userCheck").text("重新认证")
+
+						}
+					}else{
+						layer.close(windowId);
+						window.location.href="/login.html"
+					}
+						
+				},
+			error:function(data){
+				layer.close(windowId);
+				layer.msg("无法访问服务！");
+				window.location.href="/500.html"
+			}
+		})
+	});
+	//短信
+	var phoneReg = /(^1[3|4|5|7|8]\d{9}$)|(^09\d{8}$)/;
+	var count = 10;
+	var InterValObj1;
+	var curCount1;
+	function sendMessage1() {
+		curCount1 = count;
+		var userPhone = $.trim($('#phone').val());
+		if (!phoneReg.test(userPhone)) {
+			layer.msg(" 请输入有效的手机号码")
+			return false;
+		}
+
+		$("#sendMsg").attr("disabled", "true");
+		$("#sendMsg").val( + curCount1 + "秒再获取");
+		InterValObj1 = window.setInterval(SetRemainTime1, 1000);
+        //发送短信
+        var windowId = layer.load();
+
+		$.ajax({
+			type:'post',
+			url:'http://localhost:8080/e/wxUser/sendUpdate',
+			contentType:'application/json',
+			// beforeSend:function(xhr){
+			// xhr.setRequestHeader("token","Basic "+"生成token值"); 
+			// },
+			// headers: {'Authorization': token},
+			data:userPhone,
+			success:function(data){
+				//{status:0/1,result:"成功/失败"}
+				layer.close(windowId);
+				if(data){
+					layer.msg("验证码已发送");
+				}else{
+					layer.msg("请重新获取");
+				}
+            	
+			},
+			error:function(data){
+				layer.close(windowId);
+				layer.msg("无法访问服务！");
+				window.location.href="/500.html"
+			}
+		});
+
+	}
+	function SetRemainTime1() {
+		if (curCount1 == 0) {
+			window.clearInterval(InterValObj1);
+			$("#sendMsg").removeAttr("disabled");
+			$("#sendMsg").val("重新发送");
+		}
+		else {
+			curCount1--;
+			$("#sendMsg").val( + curCount1 + "秒再获取");
+		}
+	}
+
+
+	//认证
+	$("#userRegSubmitBtn").click(function () {
+			var windowId = layer.load();
+			var userName = $("#name").val();
+			var userPhone = $("#phone").val();
+			var cardId = $("#cardId").val();
+			var msg = $("#msg").val();
+			var password = $("#password").val();
+			user.userName = userName;
+			user.password = password;
+			user.userPhone = userPhone;
+			user.cardId = cardId;
+			
+
+			$.ajax({
+				type:'post',
+				url:"http://localhost:8080/e/wxUser/phoneCode",
+				contentType:'application/json',
+				data:userPhone,
+				success:function(data){
+					if (data.code==200){
+						if(msg==data.data){
+							//手机号如果未改动，则不传递手机号（dao的设计问题）
+							$.ajax({
+								type:'put',
+								url:"http://localhost:8080/e/wxUser/updateInfoUser",
+								contentType:'application/json',
+								data:JSON.stringify(user),
+								success:function(data){
+									layer.close(windowId);
+									if (data.code==200){
+										//修改成功
+										$.ajax({
+											type:'delete',
+											url:'http://localhost:8080/e/wxUser/logout',
+											success:function(data){
+												layer.msg("修改成功！请重新登录");
+												window.localStorage.removeItem("token");
+												window.location.href= "/login.html";
+											}
+										})
+									}else{
+										layer.msg(data.msg);
+									}
+									
+									
+								}
+							})
+						}else{
+							layer.close(windowId);
+							layer.msg("验证码有误或失效");
+							return;
+						}
+					}
+				}
+			})
+
+			
+
+		});
+
+
+
 	$(function() {
 		var pageContextVal = $("#PageContext").val();
 		var wxCodeVal = $("#wxCode").val();

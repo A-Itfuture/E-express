@@ -146,12 +146,12 @@
 	<div class="headerNav">
 		<div class="headerNavTop"><div class="headerNavIcon headerNavIconOut"><span></span><span></span></div></div>
 		<div class="headerNavCont">
-			<a href="index.html">快递首页</a>
-			<a href="userhome.html">个人中心</a>
-			<a href="delivery.html">送货上门</a>
-			<a href="sendexpress.html">我要寄件</a>
-			<a href="lazyboard.html">懒人排行</a>
-			<a href="expassistant.html">快递助手</a>
+			<a href="/index.html">快递首页</a>
+			<a href="/userhome.html">个人中心</a>
+			<a href="/delivery.html">送货上门</a>
+			<a href="/sendexpress.html">我要寄件</a>
+			<a href="/lazyboard.html">懒人排行</a>
+			<a href="/expassistant.html">快递助手</a>
 		</div>
 	</div>
 	<div class="userQRcodeCont">
@@ -179,6 +179,18 @@
 	</div>
 </div>
 <script type="text/javascript">
+
+var token=window.localStorage.getItem("token");
+	console.log(token)
+	 $.ajaxSetup({ //发送请求前触发
+		contentType:'application/json',
+		dataType:'json',
+		beforeSend: function (xhr) { //可以设置自定义标头
+			console.log("ajax beforesend token:", token)
+			xhr.setRequestHeader('Authorization', "Bearer "+token);
+		}
+	})  
+
 	$(function() {
 		var windowH = $(window).height();
 		var contentH = $(".content").height();
@@ -202,12 +214,33 @@
 			  correctLevel : QRCode.CorrectLevel.H
 			});
 		};
-		$.getJSON("/wx/qrcode.do",null,function(data){
-			if(data.status == -1){
-				layer.msg("二维码内容有误");
+
+		//获取当前页面请求路径得参数
+		var url  = window.location.search;
+		var theRequest = new Object();
+		if(url.indexOf("?")!=-1){//有参数，就是express请求方式
+			var str = url.substr(1);
+			var strs = str.split("&");
+			for(var i=0;i<strs.length;i++){
+				theRequest[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
 			}
-			setQRcode(data.result);
-		})
+			$.post("http://localhost:8080/e/wxQRCode/createQRCode/express",theRequest.c.substr(3,6),function(data){
+				if(data.code !=200){
+					layer.msg("二维码内容有误");
+				}
+				setQRcode(data.data);
+			})
+		}else{
+			var userPhone = window.localStorage.getItem("userPhone");
+			$.post("http://localhost:8080/e/wxQRCode/createQRCode/user",userPhone,function(data){
+				if(data.code !=200){
+					layer.msg("二维码内容有误");
+				}
+				setQRcode(data.data);
+			})
+		}
+
+		
 
 
 		$(".refresh").click(function(){

@@ -145,8 +145,76 @@
 		</div>
 	</div>
 </div>
+<script src="layer/layer.js"></script>
 <script type="text/javascript">
-	
+	var token=window.localStorage.getItem("token");
+        $.ajaxSetup({ //发送请求前触发
+            contentType:'application/json',
+            dataType:'json',
+            beforeSend: function (xhr) { //可以设置自定义标头
+                console.log("ajax beforesend token:", token)
+                xhr.setRequestHeader('Authorization', "Bearer "+token);
+            }
+        }) 
+
+        var sysUserphone ="";
+        $(function(){
+          $.ajax({
+          type:'post',
+          url:'http://localhost:8080/e/wxUser/userInfo',
+          success:function(data){
+              if(data.code==200){
+                  sysUserphone = data.data.userPhone;
+              }else{
+                  layer.msg(data.data)
+                  window.location.href="/login.html"
+              }
+              },
+              error:function(data){
+                  layer.msg("系统出错");
+                  window.location.href="/500.html"
+          }
+          })
+		  $(".submitBtn").click(function(){
+                var windowId = layer.load();
+                var number = $("#expressId").val();
+                var company = $("#company").val();
+                var username = $("#username").val();
+                var userPhone = $("#phone").val();
+                var express = {
+                    number:number,
+                    company:company,
+                    userName:username,
+                    userPhone:userPhone,
+                    sysPhone:sysUserphone
+                }
+                $.ajax({
+                  type:'post',
+                  url:'http://localhost:8080/e/wxExpress/addWxExpress',
+                  data:JSON.stringify(express),
+                  contentType:'application/json',
+                  success:function(data){
+                    layer.close(windowId);
+                    layer.msg(data.msg);
+                    if(data.code == 200){
+                      //录入成功
+                      $("input").val("");
+                      $("input:eq(1)").val("顺丰速运");
+                    }else{
+                      //录入失败
+                      layer.msg(data.data);
+                        
+                    }
+                  }
+                });
+
+                return false;
+            });
+
+          
+
+
+        });
 </script>
 </body>
 </html>

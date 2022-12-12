@@ -50,6 +50,17 @@
 	<script src="/qrcode/jquery2.1.4.js"></script>
 	<script src="/layer/layer.js"></script>
 	<script>
+
+		var token=window.localStorage.getItem("admin");
+        $.ajaxSetup({ //发送请求前触发
+            contentType:'application/json',
+            dataType:'json',
+            beforeSend: function (xhr) { //可以设置自定义标头
+                console.log("ajax beforesend token:", token)
+                xhr.setRequestHeader('Authorization', "Bearer "+token);
+            }
+        }) 
+
 		$(".header:eq(1),.content:eq(1)").hide();
 		var expressId = null;
 		var g_userPhone = null;
@@ -57,40 +68,55 @@
 			$("#find").click(function () {
 				var windowId = layer.load();
 				var number = $("#number").val();
-				$.getJSON("/express/find.do",{number:number},function (data) {
+				$.get("http://localhost:8080/e/express/findByNumber/"+number,function (data) {
 					layer.close(windowId);
-					layer.msg(data.result);
-					if (data.status == 0){
+					
+					if (data.code == 200){
+						layer.msg(data.msg);
 						$(".header:eq(1),.content:eq(1)").fadeIn(1000);
 						expressId = data.data.id;
-						g_userPhone = data.data.userphone;
+						g_userPhone = data.data.userPhone;
 						$("input:eq(1)").val(data.data.number);
 						$("input:eq(2)").val(data.data.company);
-						$("input:eq(3)").val(data.data.username);
-						$("input:eq(4)").val(data.data.userphone);
+						$("input:eq(3)").val(data.data.userName);
+						$("input:eq(4)").val(data.data.userPhone);
 						$("input:eq(4),input:eq(3),input:eq(2),input:eq(1)").prop("disable",true);
-						if (data.data.status ==0){
+						$("input").prop("disabled",true);
+						if (data.data.status =="待取件"){
 							//未签收
 							$("#status").html("未签收");
 						}else {
 							//已签收
 							$("#status").html("已签收");
 						}
+					}else{
+						layer.msg(data.data);
 					}
 				});
+				
 			});
 		});
-
 		$("#delete").click(function () {
 			var windowId = layer.load();
-			$.getJSON("/express/delete.do",{id:expressId},function (data) {
-				layer.close(windowId);
-				layer.msg(data.result);
-				if (data.status == 0){
-					$(".header:eq(1),.content:eq(1)").hide();
+			var id = expressId;
+			$.ajax({
+				type:'delete',
+				url:'http://localhost:8080/e/express/deleteExpress/'+id,
+				success:function(data){
+					layer.close(windowId);
+					
+					if (data){
+						layer.msg("删除成功");
+						$(".header:eq(1),.content:eq(1)").hide();
+					}else{
+						layer.msg("删除失败");
+					}
 				}
 			});
+			
 		});
+
+
 
 	</script>
 </html>

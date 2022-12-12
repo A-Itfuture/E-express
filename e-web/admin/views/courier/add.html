@@ -39,28 +39,45 @@
 					,layer = layui.layer;
 		</script>
 		<script>
+			var token=window.localStorage.getItem("admin");
+			$.ajaxSetup({ //发送请求前触发
+				contentType:'application/json',
+				dataType:'json',
+				beforeSend: function (xhr) { //可以设置自定义标头
+					console.log("ajax beforesend token:", token)
+					xhr.setRequestHeader('Authorization', "Bearer "+token);
+				}
+			}) 
+
 			$(function(){
 				$("#submitBtn").click(function(){
 					var windowId = layer.load();
-					var username = $("#username").val();
-					var userphone = $("#userphone").val();
-					var cardid = $("#cardid").val();
+					var userName = $("#username").val();
+					var userPhone = $("#userphone").val();
+					var cardId = $("#cardid").val();
 					var password = $("#password").val();
-					$.post("/courier/insert.do",{
-						userName:username,
-						userPhone:userphone,
-						cardId:cardid,
-						passWord:password
-					},function(data){
-						layer.close(windowId);
-						layer.msg(data.result);
-						if(data.status == 0){
-							//录入成功
-							$("input").val("");
-						}else{
-							//录入失败
+					var courier = {
+						"userName":userName,
+						"userPhone":userPhone,
+						"cardId":cardId,
+						"passWord":password
+					}
+					$.ajax({
+						type:'post',
+						url:"http://localhost:8080/e/courier/addCourier",
+						contentType:'application/json',
+						data:JSON.stringify(courier),
+						success:function(data){
+							layer.close(windowId);
+							layer.msg(data.msg);
+							if(data.code == 200){
+								//录入成功
+								$("input").val("");
+							}else{
+								//录入失败
+							}
 						}
-					});
+					})
 
 					return false;
 				});

@@ -50,6 +50,17 @@
 	<script src="/qrcode/jquery2.1.4.js"></script>
 	<script src="/layer/layer.js"></script>
 	<script>
+
+		var token=window.localStorage.getItem("admin");
+        $.ajaxSetup({ //发送请求前触发
+            contentType:'application/json',
+            dataType:'json',
+            beforeSend: function (xhr) { //可以设置自定义标头
+                console.log("ajax beforesend token:", token)
+                xhr.setRequestHeader('Authorization', "Bearer "+token);
+            }
+        }) 
+
 		$(".header:eq(1),.content:eq(1)").hide();
 		var expressId = null;
 		var g_userPhone = null;
@@ -57,25 +68,27 @@
 			$("#find").click(function () {
 				var windowId = layer.load();
 				var number = $("#number").val();
-				$.getJSON("/express/find.do",{number:number},function (data) {
+				$.get("http://localhost:8080/e/express/findByNumber/"+number,function (data) {
 					layer.close(windowId);
-					layer.msg(data.result);
-					if (data.status == 0){
+					if (data.code == 200){
+						layer.msg(data.msg);
 						$(".header:eq(1),.content:eq(1)").fadeIn(1000);
 						expressId = data.data.id;
-						g_userPhone = data.data.userphone;
+						g_userPhone = data.data.userPhone;
 						$("input:eq(1)").val(data.data.number);
 						$("input:eq(2)").val(data.data.company);
-						$("input:eq(3)").val(data.data.username);
-						$("input:eq(4)").val(data.data.userphone);
+						$("input:eq(3)").val(data.data.userName);
+						$("input:eq(4)").val(data.data.userPhone);
 						$("input:eq(4),input:eq(3),input:eq(2),input:eq(1)").prop("disable",true);
-						if (data.data.status ==0){
+						if (data.data.status =="待取件"){
 							//未签收
 							$(".status:eq(1)").prop("checked",true);
 						}else {
 							//已签收
 							$(".status:eq(0)").prop("checked",true);
 						}
+					}else{
+						layer.msg(data.data);
 					}
 				});
 			});
@@ -85,28 +98,37 @@
 			var windowId = layer.load();
 			var number = $("input:eq(1)").val();
 			var company = $("input:eq(2)").val();
-			var username = $("input:eq(3)").val();
-			var userphone = $("input:eq(4)").val();
+			var userName = $("input:eq(3)").val();
+			var userPhone = $("input:eq(4)").val();
 			var status = $(".status:checked").val();
 			//手机号如果未改动，则不传递手机号（dao的设计问题）
+			expressId = parseInt(expressId);
 			var express = {
 				id:expressId,
 				number:number,
 				company:company,
-				username:username,
+				userName:userName,
 				status:status
 			};
-			if (g_userPhone != userphone){
-				express.userPhone = userphone;
+			if (g_userPhone != userPhone){
+				express.userPhone = userPhone;
 			}
-			$.getJSON("/express/update.do",express,function (data) {
-				layer.close(windowId);
-				layer.msg(data.result);
-				if (data.status==0){
-					//修改成功
-					$(".header:eq(1),.content:eq(1)").hide();
+
+			$.ajax({
+				url:"http://localhost:8080/e/express/updateExpress",
+				type:'put',
+				contentType: 'application/json',
+				data:JSON.stringify(express),
+				success:function(data){
+					layer.close(windowId);
+					layer.msg(data.msg);
+					if (data.code==200){
+						//修改成功
+						$(".header:eq(1),.content:eq(1)").hide();
+					}
 				}
-			});
+			})
+			
 		});
 	</script>
 </html>

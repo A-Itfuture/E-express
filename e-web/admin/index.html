@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="assets/css/layui.css">
     <link rel="stylesheet" href="assets/css/admin.css">
     <link rel="icon" href="/favicon.ico">
-    <title>快递e栈管理后台</title>
+    <title>快递E栈管理后台</title>
 </head>
 <body class="layui-layout-body">
     <div class="layui-layout layui-layout-admin">
@@ -21,9 +21,9 @@
 
             <ul class="layui-nav layui-layout-right">
                 <li class="layui-nav-item">
-                    <a href="javascript:;">admin</a>
+                    <a id="adminName" href="javascript:;">admin</a>
                     <dl class="layui-nav-child">
-                        <dd><a href="#">帮助中心</a></dd>
+                        <dd id="help_d"><a href="#">帮助中心</a></dd>
                         <dd id="exit_d"><a href="#">退出</a></dd>
                     </dl>
                 </li>
@@ -35,7 +35,7 @@
 
                 <div class="custom-logo">
                     <img src="assets/images/logo.gif" alt=""/>
-                    <h1>快递e栈</h1>
+                    <h1>快递E栈</h1>
                 </div>
                 <ul id="Nav" class="layui-nav layui-nav-tree">
                     <li class="layui-nav-item">
@@ -105,7 +105,40 @@
     <script src="js/index.js" data-main="home"></script>
     <script src="/qrcode/jquery2.1.4.js"></script>
     <script src="/layer/layer.js"></script>
-    <script>
+    <script type="text/javascript">
+
+var token=window.localStorage.getItem("admin");
+	 $.ajaxSetup({ //发送请求前触发
+		contentType:'application/json',
+		dataType:'json',
+		beforeSend: function (xhr) { //可以设置自定义标头
+			console.log("ajax beforesend token:", token)
+			xhr.setRequestHeader('Authorization', "Bearer "+token);
+		}
+	}) 
+    $(function(){
+        $.ajax({
+        type:'post',
+        url:'http://localhost:8080/e/admin/adminInfo',
+        success:function(data){
+            if(data.code==200){
+                $("#adminName").text(data.data.userName)
+            }else{
+                layer.msg(data.data)
+                window.location.href="/admin/login.html"
+            }
+        },
+        error:function(data){
+            layer.msg("系统出错");
+            window.location.href="/admin/500.html"
+		}
+        })
+    })
+    
+    $("#help_d").click(function(){
+        layer.confirm("本系统处于初步开发中,详情请联系itfuture03@163.com")
+    })
+       
         $("#exit_d").click(function () {
             layer.confirm('是否退出',
                 {
@@ -113,9 +146,10 @@
                     title:'提示',
                     yes: function(index){
                         layer.close(index);
+                        window.localStorage.removeItem("admin");
                         $.ajax({
-                            url: '/admin/exit.do',
-                            type: "POST",
+                            url: 'http://localhost:8080/e/admin/exitLogin',
+                            type: "delete",
                             data:null,
                             success:function () {
                                 top.location.href="/admin/login.html";

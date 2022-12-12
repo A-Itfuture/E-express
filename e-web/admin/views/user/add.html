@@ -39,6 +39,15 @@
 				,layer = layui.layer;
 	</script>
 	<script>
+		var token=window.localStorage.getItem("admin");
+        $.ajaxSetup({ //发送请求前触发
+            contentType:'application/json',
+            dataType:'json',
+            beforeSend: function (xhr) { //可以设置自定义标头
+                console.log("ajax beforesend token:", token)
+                xhr.setRequestHeader('Authorization', "Bearer "+token);
+            }
+        }) 
 		$(function(){
 			$("#submitBtn").click(function(){
 				var windowId = layer.load();
@@ -46,22 +55,31 @@
 				var userphone = $("#userphone").val();
 				var cardid = $("#cardid").val();
 				var password = $("#password").val();
-
-				$.post("/user/insert.do",{
+				var user = {
 					userName:username,
 					userPhone:userphone,
 					cardId:cardid,
-					passWord:password
-				},function(data){
-					layer.close(windowId);
-					layer.msg(data.result);
-					if(data.status == 0){
-						//录入成功
-						$("input").val("");
-					}else{
-						//录入失败
-					}
-				});
+					password:password
+				}
+				
+				$.ajax({
+                  type:'post',
+                  url:'http://localhost:8080/e/user/addUser',
+                  data:JSON.stringify(user),
+                  contentType:'application/json',
+                  success:function(data){
+                    layer.close(windowId);
+                    
+                    if(data.code == 200){
+						layer.msg(data.msg);
+                        //录入成功
+                        $("input").val("");
+                    }else{
+                        //录入失败
+						layer.msg(data.data);
+                    }
+                  }
+                });
 
 				return false;
 			});

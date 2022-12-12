@@ -63,58 +63,94 @@
 <script src="js/jquery.min.js"></script>
 <script src="layer/layer.js"></script>
 <script>
-	$(function(){
-		$.getJSON("/wx/findExpressByUserPhone.do",null,function (data){
-			//[{"id":1,"number":"123","username":"帅哥","userPhone":"18516955565","company":"顺丰快递","code":"123456","inTime":"2020-07-24 17:24:42","outTime":"未出库","status":"待取件","sysPhone":"18888888888"}],"status1":
-			var data1 = data.status0;
-			for(i=0;i<data1.length;i++){
-				var item = "<div class=\"item\">\n" +
-						"\t\t\t<div class=\"imte_top\"><span>"+data1[i].inTime+"</span></div>\n" +
-						"\t\t\t<div class=\"item_content\">\n" +
-						"\t\t\t\t<div class=\"item_content_top\">\n" +
-						"\t\t\t\t\t<div class=\"item_content_top_1\">取件通知</div>\n" +
-						"\t\t\t\t\t<div class=\"item_content_top_2\">"+data1[i].inTime+"</div>\n" +
-						"\t\t\t\t\t<div class=\"item_content_top_3\">您有一个包裹到e栈了!</div>\n" +
-						"\t\t\t\t\t<div class=\"item_content_top_4\">\n" +
-						"\t\t\t\t\t\t取件码:<span style=\"color:#05a\">"+data1[i].code+"</span><br>\n" +
-						"\t\t\t\t\t\t快递公司:"+data1[i].company+"<br>\n" +
-						"\t\t\t\t\t\t运单号码:"+data1[i].number+"<br>\n" +
-						"\t\t\t\t\t\t站点电话:"+data1[i].sysPhone+"<br>\n" +
-						"\t\t\t\t\t</div>\n" +
-						"\t\t\t\t</div>\n" +
-						"\t\t\t\t<hr>\n" +
-						"\t\t\t\t<div class=\"item_content_bottom\">\n" +
-						"\t\t\t\t\t<a href=\"/wx/createQRCode.do?type=express&code="+data1[i].code+"\">二维码</a>\n" +
-						"\t\t\t\t</div>\n" +
-						"\t\t\t</div>\n" +
-						"\t\t</div>";
-				$("#status0Content").append($(item));
-			}
-			//[{"id":12461,"number":"11221122","username":"大帅哥","userPhone":"18516955565","company":"波兰邮政","code":"已取件","inTime":"2020-07-22 18:24:34","outTime":"2020-07-22 20:51:06","status":"已取件","sysPhone":"18888888888"}]
-			var data2 = data.status1;
-			for(i=0;i<data2.length;i++){
-				var item = "<div class=\"item\">\n" +
-						"\t\t\t<div class=\"imte_top\"><span>"+data2[i].outTime+"</span></div>\n" +
-						"\t\t\t<div class=\"item_content\">\n" +
-						"\t\t\t\t<div class=\"item_content_top\">\n" +
-						"\t\t\t\t\t<div class=\"item_content_top_1\">取件成功通知</div>\n" +
-						"\t\t\t\t\t<div class=\"item_content_top_2\">"+data2[i].outTime+"</div>\n" +
-						"\t\t\t\t\t<div class=\"item_content_top_3\">您有一个包裹从e栈取出了!</div>\n" +
-						"\t\t\t\t\t<div class=\"item_content_top_4\">\n" +
-						"\t\t\t\t\t\t快递公司:"+data2[i].company+"<br>\n" +
-						"\t\t\t\t\t\t运单号码:"+data2[i].number+"<br>\n" +
-						"\t\t\t\t\t\t站点电话:"+data2[i].sysPhone+"<br>\n" +
-						"\t\t\t\t\t</div>\n" +
-						"\t\t\t\t</div>\n" +
-						"\t\t\t\t<hr>\n" +
-						"\t\t\t\t<div class=\"item_content_bottom\">\n" +
-						"\t\t\t\t\t<a href=\"#\">有疑问 ? 点了也没用</a>\n" +
-						"\t\t\t\t</div>\n" +
-						"\t\t\t</div>\n" +
-						"\t\t</div>";
-				$("#status1Content").append($(item));
-			}
-		});
-	});
+
+	var token=window.localStorage.getItem("token");
+	console.log(token)
+	 $.ajaxSetup({ //发送请求前触发
+		contentType:'application/json',
+		dataType:'json',
+		beforeSend: function (xhr) { //可以设置自定义标头
+			console.log("ajax beforesend token:", token)
+			xhr.setRequestHeader('Authorization', "Bearer "+token);
+		}
+	})  
+
+	var userPhone ="";
+	$.ajax({
+		type:'post',
+		url:'http://localhost:8080/e/wxUser/userInfo',
+		success:function(data){
+				if(data.code == 200){
+
+					$(function(){
+						layer.msg(data.data.userName+"未取快递");
+						$.post("http://localhost:8080/e/wxExpress/userExpressList",data.data.userPhone,function (data){
+							//[{"id":1,"number":"123","username":"帅哥","userPhone":"18516955565","company":"顺丰快递","code":"123456","inTime":"2020-07-24 17:24:42","outTime":"未出库","status":"待取件","sysPhone":"18888888888"}],"status1":
+							if(data.code==200){
+								var data1 = data.data;
+								for(i=0;i<data1.length;i++){
+									var item = "<div class=\"item\">\n" +
+											"\t\t\t<div class=\"imte_top\"><span>"+data1[i].inTime+"</span></div>\n" +
+											"\t\t\t<div class=\"item_content\">\n" +
+											"\t\t\t\t<div class=\"item_content_top\">\n" +
+											"\t\t\t\t\t<div class=\"item_content_top_1\">取件通知</div>\n" +
+											"\t\t\t\t\t<div class=\"item_content_top_2\">"+data1[i].inTime+"</div>\n" +
+											"\t\t\t\t\t<div class=\"item_content_top_3\">您有一个包裹到e栈了!</div>\n" +
+											"\t\t\t\t\t<div class=\"item_content_top_4\">\n" +
+											"\t\t\t\t\t\t取件码:<span style=\"color:#05a\">"+data1[i].code+"</span><br>\n" +
+											"\t\t\t\t\t\t快递公司:"+data1[i].company+"<br>\n" +
+											"\t\t\t\t\t\t运单号码:"+data1[i].number+"<br>\n" +
+											"\t\t\t\t\t\t站点电话:"+data1[i].sysPhone+"<br>\n" +
+											"\t\t\t\t\t</div>\n" +
+											"\t\t\t\t</div>\n" +
+											"\t\t\t\t<hr>\n" +
+											"\t\t\t\t<div class=\"item_content_bottom\">\n" +
+											"\t\t\t\t\t<a href=\"http://127.0.0.1:8001/personQRcode.html?c=exp"+data1[i].code+"ress\">二维码</a>\n" +
+											"\t\t\t\t</div>\n" +
+											"\t\t\t</div>\n" +
+											"\t\t</div>";
+									$("#status0Content").append($(item));
+								}
+								//[{"id":12461,"number":"11221122","username":"大帅哥","userPhone":"18516955565","company":"波兰邮政","code":"已取件","inTime":"2020-07-22 18:24:34","outTime":"2020-07-22 20:51:06","status":"已取件","sysPhone":"18888888888"}]
+								var data2 = data.status1;
+								for(i=0;i<data2.length;i++){
+									var item = "<div class=\"item\">\n" +
+											"\t\t\t<div class=\"imte_top\"><span>"+data2[i].outTime+"</span></div>\n" +
+											"\t\t\t<div class=\"item_content\">\n" +
+											"\t\t\t\t<div class=\"item_content_top\">\n" +
+											"\t\t\t\t\t<div class=\"item_content_top_1\">取件成功通知</div>\n" +
+											"\t\t\t\t\t<div class=\"item_content_top_2\">"+data2[i].outTime+"</div>\n" +
+											"\t\t\t\t\t<div class=\"item_content_top_3\">您有一个包裹从e栈取出了!</div>\n" +
+											"\t\t\t\t\t<div class=\"item_content_top_4\">\n" +
+											"\t\t\t\t\t\t快递公司:"+data2[i].company+"<br>\n" +
+											"\t\t\t\t\t\t运单号码:"+data2[i].number+"<br>\n" +
+											"\t\t\t\t\t\t站点电话:"+data2[i].sysPhone+"<br>\n" +
+											"\t\t\t\t\t</div>\n" +
+											"\t\t\t\t</div>\n" +
+											"\t\t\t\t<hr>\n" +
+											"\t\t\t\t<div class=\"item_content_bottom\">\n" +
+											"\t\t\t\t\t<a href=\"#\">有疑问 ? 点了也没用</a>\n" +
+											"\t\t\t\t</div>\n" +
+											"\t\t\t</div>\n" +
+											"\t\t</div>";
+									$("#status1Content").append($(item));
+								}
+							}else{
+								var item = "<div class=\"item\">\n" +
+											"\t\t\t<div class=\"imte_top\"><span>"+"暂无快递信息"+"</span></div>\n" +"</div>";
+									$("#status0Content").append($(item));
+							}
+						});
+					});
+				}else{
+					window.location.href="/login.html"
+				}
+					
+			},
+		error:function(data){
+			layer.msg("请登录后访问");
+			window.location.href="/login.html"
+		}
+	})
 </script>
 </html>

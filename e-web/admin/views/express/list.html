@@ -17,9 +17,19 @@
 <!-- TODO: 使用bootstrap-table插件分页 -->
 	<table id="express_list"></table>
 	<script>
+		var token=window.localStorage.getItem("admin");
+        $.ajaxSetup({ //发送请求前触发
+            contentType:'application/json',
+            dataType:'json',
+            beforeSend: function (xhr) { //可以设置自定义标头
+                console.log("ajax beforesend token:", token)
+                xhr.setRequestHeader('Authorization', "Bearer "+token);
+            }
+        }) 
+		
 		$(function(){
 			$("#express_list").bootstrapTable({
-				url:"/express/list.do",//数据地址
+				url:"http://localhost:8080/e/express/expressListPage",//数据地址
 				striped:true,//是否显示行的间隔
 				pageNumber:1,//初始化加载第几页
 				pagination:true,//是否分页
@@ -47,7 +57,7 @@
 					},
 					{
 						title:"姓名",
-						field:"username",
+						field:"userName",
 						sortable:false
 					},
 					{

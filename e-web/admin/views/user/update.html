@@ -47,6 +47,15 @@
 	<script src="/qrcode/jquery2.1.4.js"></script>
 	<script src="/layer/layer.js"></script>
 	<script>
+		var token=window.localStorage.getItem("admin");
+        $.ajaxSetup({ //发送请求前触发
+            contentType:'application/json',
+            dataType:'json',
+            beforeSend: function (xhr) { //可以设置自定义标头
+                console.log("ajax beforesend token:", token)
+                xhr.setRequestHeader('Authorization', "Bearer "+token);
+            }
+        }) 
 		$(".header:eq(1),.content:eq(1)").hide();
 		var userId = null;
 		var oldPhone = null;
@@ -54,44 +63,60 @@
 			$("#find").click(function () {
 				var windowId = layer.load();
 				oldPhone = $("#oldPhone").val();
-				$.getJSON("/user/find.do",{oldPhone:oldPhone},function (data) {
-					layer.close(windowId);
-					layer.msg(data.result);
-					if (data.status == 0){
-						$(".header:eq(1),.content:eq(1)").fadeIn(1000);
-						userId = data.data.id;
-						$("input:eq(0)").val(oldPhone);
-						$("input:eq(1)").val(data.data.userName);
-						$("input:eq(2)").val(data.data.userPhone);
-						$("input:eq(3)").val(data.data.cardId);
-						$("input:eq(4)").val(data.data.password);
+				$.ajax({
+					type:'post',
+					url:"http://localhost:8080/e/user/findUserByUserPhone",
+					contentType:'application/json',
+					data:oldPhone,
+					success:function(data){
+						layer.close(windowId);
+						
+							if (data.code == 200){
+							layer.msg(data.msg);
+							$(".header:eq(1),.content:eq(1)").fadeIn(1000);
+							userId = data.data.id;
+							$("input:eq(0)").val(oldPhone);
+							$("input:eq(1)").val(data.data.userName);
+							$("input:eq(2)").val(data.data.userPhone);
+							$("input:eq(3)").val(data.data.cardId);
+							$("input:eq(4)").val(data.data.password);
+						}else{
+							layer.msg(data.data);
+						}
 					}
 				});
-			});
-		});
-
+			});		
+		});																			
 		$("#update").click(function () {
 			var windowId = layer.load();
 			var userName = $("input:eq(1)").val();
 			var userPhone = $("input:eq(2)").val();
 			var cardId = $("input:eq(3)").val();
 			var password = $("input:eq(4)").val();
+			var newUser ={
+				"id":userId,
+				"oldPhone":oldPhone,
+				"userName":userName,
+				"userPhone":userPhone,
+				"password":password,
+				"cardId":cardId
+			}
 			//手机号如果未改动，则不传递手机号（dao的设计问题）
-			$.getJSON("/user/update.do", {
-				id:userId,
-				oldPhone:oldPhone,
-				userName:userName,
-				userPhone:userPhone,
-				password:password,
-				cardId:cardId
-			},function (data) {
-				layer.close(windowId);
-				layer.msg(data.result);
-				if (data.status==0){
-					//修改成功
-					$(".header:eq(1),.content:eq(1)").hide();
+			$.ajax({
+				type:'put',
+				url:"http://localhost:8080/e/user/updateUser",
+				contentType:'application/json',
+				data:JSON.stringify(newUser),
+				success:function(data){
+					layer.close(windowId);
+					if (data){
+						layer.msg("修改成功！");
+						//修改成功
+						$(".header:eq(1),.content:eq(1)").hide();
+					}
 				}
-			});
+			})
+
 		});
 	</script>
 </html>

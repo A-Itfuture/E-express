@@ -54,15 +54,24 @@
 <script src="js/jquery.min.js"></script>
 <script src="layer/layer.js"></script>
 <script type="text/javascript">
+	var token=window.localStorage.getItem("token");
+	 $.ajaxSetup({ //发送请求前触发
+		contentType:'application/json',
+		dataType:'json',
+		beforeSend: function (xhr) { //可以设置自定义标头
+			console.log("ajax beforesend token:", token)
+			xhr.setRequestHeader('Authorization', "Bearer "+token);
+		}
+	})  
 	var phoneReg = /(^1[3|4|5|7|8]\d{9}$)|(^09\d{8}$)/;
 	var count = 10;
 	var InterValObj1;
 	var curCount1;
 	function sendMessage1() {
 		curCount1 = count;
-		var phone = $.trim($('#phone1').val());
-		if (!phoneReg.test(phone)) {
-			alert(" 请输入有效的手机号码");
+		var userPhone = $.trim($('#phone1').val());
+		if (!phoneReg.test(userPhone)) {
+			layer.msg(" 请输入有效的手机号码")
 			return false;
 		}
 
@@ -71,11 +80,32 @@
 		InterValObj1 = window.setInterval(SetRemainTime1, 1000);
         //发送短信
         var windowId = layer.load();
-		$.getJSON("/wx/loginSms.do",{userPhone:phone},function(data){
-            //{status:0/1,result:"成功/失败"}
-            layer.close(windowId);
-            layer.msg(data.result);
-        })
+
+		$.ajax({
+			type:'post',
+			url:'http://localhost:8080/e/wxUser/loginSms',
+			contentType:'application/json',
+			// beforeSend:function(xhr){
+			// xhr.setRequestHeader("token","Basic "+"生成token值"); 
+			// },
+			// headers: {'Authorization': token},
+			data:userPhone,
+			success:function(data){
+				//{status:0/1,result:"成功/失败"}
+				layer.close(windowId);
+				if(data){
+					layer.msg("验证码已发送");
+				}else{
+					layer.msg("请重新获取");
+				}
+            	
+			},
+			error:function(data){
+				layer.close(windowId);
+				layer.msg("无法访问服务！");
+				window.location.href="/500.html"
+			}
+		});
 
 	}
 	function SetRemainTime1() {
@@ -100,14 +130,51 @@
         var userPhone = $.trim($('#phone1').val());
         var code = $.trim($('#code1').val());
         var windowId = layer.load();
-        $.post("/wx/login.do",{userPhone:userPhone,code:code},function(data){
-            layer.close(windowId);
-            if(data.status == 0  || data.status == 1){
-                //用户登录成功
-                window.location.href = "index.html";
-            }
-            layer.msg(data.result);
-        },"JSON");
+		var userPhoneAndCode = {
+			"userPhone":userPhone,
+			"code":code
+		}
+
+		const sleep = (timeout) => {
+			return new Promise((resolve)=>{
+				setTimeout(()=>{
+				resolve();
+				}, timeout)
+			})
+			}
+
+		if(userPhone!=null && userPhone!=""){
+			$.ajax({
+				type:'post',
+				url:'http://localhost:8080/e/wxUser/login',
+				data:JSON.stringify(userPhoneAndCode),
+				success:function(data){
+					// var res =JSON.parse(data);
+					layer.close(windowId);
+					if(data.code == 200){
+						var tokenData = JSON.stringify(data.data);
+						tokenData = tokenData.substring(1,tokenData.length-1);
+						layer.msg("登陆成功");
+						window.localStorage.setItem("token",tokenData)
+						//用户登录成功
+						window.location.href = "/";
+						
+					}else{
+						layer.msg(data.data+"")
+					}
+					
+				},
+				error:function(data){
+					layer.close(windowId);
+					layer.msg("无法访问服务！");
+					window.location.href="/500.html";
+				}
+			})
+
+		}else{
+			layer.close(windowId);
+			layer.msg("手机号不能为空");
+		}
 	}
 </script>
 
