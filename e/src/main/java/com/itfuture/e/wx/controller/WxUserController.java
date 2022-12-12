@@ -2,8 +2,10 @@ package com.itfuture.e.wx.controller;
 
 import com.itfuture.e.intercept.NotControllerResponseAdvice;
 import com.itfuture.e.pojo.TokenDTO;
+import com.itfuture.e.pojo.vo.CourierVo;
 import com.itfuture.e.pojo.vo.ResultVo;
 import com.itfuture.e.pojo.vo.UserVo;
+import com.itfuture.e.service.CourierService;
 import com.itfuture.e.service.UserService;
 import com.itfuture.e.util.JWTUtil;
 import com.itfuture.e.util.RedisUtil;
@@ -28,6 +30,8 @@ import javax.servlet.http.HttpServletRequest;
 public class WxUserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private CourierService courierService;
 
     @ApiOperation("发送验证码")
     @PostMapping("/loginSms")
@@ -62,7 +66,11 @@ public class WxUserController {
         return RedisUtil.getValue("update"+phone);
     }
 
-
+    @ApiOperation("更新认证快递员信息")
+    @PutMapping("/updateInfoCourier")
+    public boolean updateInfoCourier(@ApiParam("更改快递员信息的实体")  @RequestBody CourierVo courierVo){
+        return courierService.updateCourier(courierVo);
+    }
 
     @ApiOperation("更新认证用户信息")
     @PutMapping("/updateInfoUser")

@@ -178,6 +178,10 @@ public class ExpressServiceImpl implements ExpressService {
      */
     @Override
     public boolean insert(ExpressVo expressVo) {
+
+        if(findByNumber(expressVo.getNumber())!=null){
+            throw new BusinessException(ResultCode.FAILED,"单号重复！");
+        }
         Express express = expressMapperFactory.getMapperFacade().map(expressVo, Express.class);
         //生成了取件码
         express.setCode(RandomUtil.getCode()+"");

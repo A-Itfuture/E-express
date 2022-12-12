@@ -276,10 +276,6 @@
 			type:'post',
 			url:'http://localhost:8080/e/wxUser/sendUpdate',
 			contentType:'application/json',
-			// beforeSend:function(xhr){
-			// xhr.setRequestHeader("token","Basic "+"生成token值"); 
-			// },
-			// headers: {'Authorization': token},
 			data:userPhone,
 			success:function(data){
 				//{status:0/1,result:"成功/失败"}
@@ -335,31 +331,61 @@
 					if (data.code==200){
 						if(msg==data.data){
 							//手机号如果未改动，则不传递手机号（dao的设计问题）
-							$.ajax({
-								type:'put',
-								url:"http://localhost:8080/e/wxUser/updateInfoUser",
-								contentType:'application/json',
-								data:JSON.stringify(user),
-								success:function(data){
-									layer.close(windowId);
-									if (data.code==200){
-										//修改成功
-										$.ajax({
-											type:'delete',
-											url:'http://localhost:8080/e/wxUser/logout',
-											success:function(data){
-												layer.msg("修改成功！请重新登录");
-												window.localStorage.removeItem("token");
-												window.location.href= "/login.html";
-											}
-										})
-									}else{
-										layer.msg(data.msg);
+							if(user.status==0){
+								$.ajax({
+									type:'put',
+									url:"http://localhost:8080/e/wxUser/updateInfoUser",
+									contentType:'application/json',
+									data:JSON.stringify(user),
+									success:function(data){
+										layer.close(windowId);
+										if (data.code==200){
+											//修改成功
+											$.ajax({
+												type:'delete',
+												url:'http://localhost:8080/e/wxUser/logout',
+												success:function(data){
+													layer.msg("修改成功！请重新登录");
+													window.localStorage.removeItem("token");
+													window.location.href= "/login.html";
+												}
+											})
+										}else{
+											layer.msg(data.msg);
+										}
+										
+										
 									}
-									
-									
-								}
-							})
+								})
+								
+							}else if(user.status==1){
+								$.ajax({
+									type:'put',
+									url:"http://localhost:8080/e/wxUser/updateInfoCourier",
+									contentType:'application/json',
+									data:JSON.stringify(user),
+									success:function(data){
+										layer.close(windowId);
+										if (data.code==200){
+											//修改成功
+											$.ajax({
+												type:'delete',
+												url:'http://localhost:8080/e/wxUser/logout',
+												success:function(data){
+													layer.msg("修改成功！请重新登录");
+													window.localStorage.removeItem("token");
+													window.location.href= "/login.html";
+												}
+											})
+										}else{
+											layer.msg(data.msg);
+										}
+										
+										
+									}
+								})
+
+							}
 						}else{
 							layer.close(windowId);
 							layer.msg("验证码有误或失效");
