@@ -5,18 +5,18 @@ import com.itfuture.e.Exception.BusinessException;
 import com.itfuture.e.dao.ExpressDao;
 import com.itfuture.e.pojo.Express;
 import com.itfuture.e.pojo.ExpressMapperFactory;
-import com.itfuture.e.pojo.User;
-import com.itfuture.e.pojo.vo.ExpressVo;
-import com.itfuture.e.pojo.vo.ResultCode;
-import com.itfuture.e.pojo.vo.TableData;
-import com.itfuture.e.pojo.vo.UserVo;
+import com.itfuture.e.pojo.TokenDTO;
+import com.itfuture.e.pojo.vo.*;
 import com.itfuture.e.service.ExpressService;
+import com.itfuture.e.sms.TxSmsTemplate;
+import com.itfuture.e.util.JWTUtil;
 import com.itfuture.e.util.RandomUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +34,8 @@ public class ExpressServiceImpl implements ExpressService {
     private ExpressDao expressDao;
     @Autowired
     private ExpressMapperFactory expressMapperFactory;
+    @Autowired
+    private TxSmsTemplate txSmsTemplate;
 
     /**
      * 用于查询数据库中的全部快递（总数+新增），待取件快递（总数+新增）
@@ -84,6 +86,25 @@ public class ExpressServiceImpl implements ExpressService {
         Express express = expressDao.findByNumber(number);
         if (express == null) {
             throw new BusinessException(ResultCode.FAILED, "无此单号信息");
+        }
+        return expressMapperFactory.getMapperFacade().map(express, ExpressVo.class);
+    }
+
+    /**
+     * 根据number查询自己快递信息
+     *
+     * @param number
+     * @param userPhone
+     * @return
+     */
+    @Override
+    public ExpressVo findByNumberAndUserPhone(String number, String userPhone) {
+        Express express = expressDao.findByNumber(number);
+        if (express == null) {
+            throw new BusinessException(ResultCode.FAILED, "无此单号信息");
+        }
+        if(!userPhone.equals(express.getUserPhone())){
+            throw new BusinessException(ResultCode.FAILED, "您无此单号信息");
         }
         return expressMapperFactory.getMapperFacade().map(express, ExpressVo.class);
     }
@@ -162,7 +183,17 @@ public class ExpressServiceImpl implements ExpressService {
         express.setCode(RandomUtil.getCode()+"");
         express.setInTime(new Timestamp(System.currentTimeMillis()));
         express.setStatus(0);
-        return expressDao.insert(express)!=0;
+        //TODO 获取录取人手机号
+        //express.setSysPhone();
+        boolean flag = false;
+        flag = expressDao.insert(express) != 0;
+        if (flag){
+            //TODO 发送取件短信
+            //txSmsTemplate.sendMesModel(express.getUserPhone(),express.getCode());
+        }else {
+            throw new BusinessException(ResultCode.FAILED,"录入失败！");
+        }
+        return flag;
     }
 
     /**
@@ -187,7 +218,7 @@ public class ExpressServiceImpl implements ExpressService {
             Express express = expressMapperFactory.getMapperFacade().map(newExpressVo, Express.class);
             update = expressDao.updateById(express) != 0;
             if (express.getStatus()==1 && express.getStatus()!=e.getStatus()){
-                update= expressDao.updateStatus(express.getCode());
+                update= expressDao.updateStatus(e.getCode());
             }
 
         }
@@ -202,7 +233,12 @@ public class ExpressServiceImpl implements ExpressService {
      */
     @Override
     public boolean updateStatus(String code) {
-        return expressDao.updateStatus(code);
+        boolean flag = false;
+        flag = expressDao.updateStatus(code);
+        if (!flag){
+            throw new BusinessException(ResultCode.VALIDATE_ERROR,"取件码不存在,请用户更新二维码");
+        }
+        return flag;
     }
 
     /**
@@ -215,4 +251,33 @@ public class ExpressServiceImpl implements ExpressService {
     public boolean deleteExpressById(int id) {
         return expressDao.deleteById(id) != 0;
     }
+
+    /**
+     * 二维码内容生成
+     *
+     * @param code
+     * @param type
+     * @return
+     */
+    @Override
+    public String createQRCode(String code, String type,String token) {
+        String userPhone =null;
+        String qRCodeContent = null;
+        if("express".equals(type)){
+            //快递二维码:被扫后,展示单个快递的信息
+            //code
+            qRCodeContent = "express_"+code;
+        }else {
+            //TODO 用户二维码:被扫后,快递员(柜子)端展示用户所有快递
+            //userPhone
+            //User wxUser = new User();
+            //wxUser.setUserPhone("13279679928");
+            TokenDTO tokenInfo = JWTUtil.getTokenInfo(token);
+
+            userPhone = tokenInfo.getUserPhone();
+            qRCodeContent = "userPhone_"+userPhone;
+        }
+        return qRCodeContent;
+    }
+
 }

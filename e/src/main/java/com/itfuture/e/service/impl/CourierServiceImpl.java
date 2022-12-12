@@ -83,6 +83,14 @@ public class CourierServiceImpl implements CourierService {
         }
         return userMapperFactory.getMapperFacade().map(courier, CourierVo.class);
     }
+    @Override
+    public CourierVo exitByUserPhone(String userPhone) {
+        Courier courier = courierDao.findByUserPhone(userPhone);
+        if (courier == null) {
+           return null;
+        }
+        return userMapperFactory.getMapperFacade().map(courier, CourierVo.class);
+    }
 
     /**
      * 快递员的增加

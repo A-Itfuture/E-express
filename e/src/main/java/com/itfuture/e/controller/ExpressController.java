@@ -1,15 +1,19 @@
 package com.itfuture.e.controller;
 
 import com.itfuture.e.intercept.NotControllerResponseAdvice;
+import com.itfuture.e.pojo.TokenDTO;
 import com.itfuture.e.pojo.vo.ExpressVo;
 import com.itfuture.e.pojo.vo.ResultVo;
+import com.itfuture.e.pojo.vo.TableData;
 import com.itfuture.e.service.ExpressService;
+import com.itfuture.e.util.JWTUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 
@@ -19,7 +23,8 @@ import java.util.Map;
  * @date： 2022/11/06 15:48
  */
 @Api(tags = "快递管理控制器")
-@RestController("/express")
+@RestController
+@RequestMapping("/express")
 public class ExpressController {
     @Autowired
     private ExpressService expressService;
@@ -32,15 +37,26 @@ public class ExpressController {
 
     @ApiOperation("分页获取所有快递信息")
     @GetMapping("/expressListPage")
-    public ResultVo listPage(@RequestParam(required = false,defaultValue = "0") Integer offset,
-                             @RequestParam(required = false,defaultValue = "5") Integer pageNumber){
-        return new ResultVo(expressService.findList(true,offset,pageNumber));
+    @NotControllerResponseAdvice
+    public TableData listPage(@RequestParam(required = false,defaultValue = "0") Integer offset,
+                              @RequestParam(required = false,defaultValue = "5") Integer pageNumber){
+        return expressService.findList(true,offset,pageNumber);
     }
 
     @ApiOperation("获取所有快递信息")
     @GetMapping("/expressList")
     public ResultVo list(){
         return new ResultVo(expressService.findList(false,0,0));
+    }
+
+    @ApiOperation("快递的录入")
+    @PostMapping("/addExpress")
+    public ResultVo addCourier(@ApiParam("快递信息实体")  @RequestBody ExpressVo expressVo, HttpServletRequest request){
+        String authToken  = request.getHeader("Authorization");
+        String token = authToken.substring("Bearer".length() + 1).trim();
+        TokenDTO tokenInfo = JWTUtil.getTokenInfo(token);
+        expressVo.setUserPhone(tokenInfo.getUserName());
+        return new ResultVo(expressService.insert(expressVo));
     }
 
     @ApiOperation("根据快递单号查询快递信息")
@@ -50,50 +66,10 @@ public class ExpressController {
         return expressService.findByNumber(number);
     }
 
-    @ApiOperation("根据取件码查询快递信息")
-    @PostMapping("/findByCode")
-    public ExpressVo findByCode(@ApiParam("查询条件：取件码") @RequestBody String code){
-        //TODO 前端保证code不为空
-        return expressService.findByCode(code);
-    }
-
-    @ApiOperation("根据用户手机号码，查询他所有的快递信息")
-    @PostMapping("/findByUserPhone")
-    public List<ExpressVo> findByUserPhone(@ApiParam("查询条件:用户号码") @RequestBody String userPhone){
-        //TODO 前端保证code不为空
-        return expressService.findByUserPhone(userPhone);
-    }
-
-    @ApiOperation("根据录入人手机号码，查询录入的所有记录")
-    @PostMapping("/findBySysPhone")
-    public List<ExpressVo> findBySysPhone(@ApiParam("查询条件:录入人手机号码") @RequestBody String sysPhone){
-        return expressService.findBySysPhone(sysPhone);
-    }
-
-    @ApiOperation("根据用户手机号码和指定状态，查询他所有的快递信息")
-    @PostMapping("/findByUserPhoneAndStatus/{status}")
-    public List<ExpressVo> findByUserPhoneAndStatus(@ApiParam("查询条件:用户手机号码") @RequestBody String userPhone,@PathVariable("status") int status){
-        return expressService.findByUserPhoneAndStatus(userPhone,status);
-    }
-
-    @ApiOperation("快递的录入")
-    @PostMapping("/addExpress")
-    public ResultVo addCourier(@ApiParam("快递信息实体")  @RequestBody ExpressVo expressVo){
-        return new ResultVo(expressService.insert(expressVo));
-    }
-
-
     @ApiOperation("快递的修改")
     @PutMapping("/updateExpress")
     public boolean updateExpress(@ApiParam("更改快递信息的实体")  @RequestBody ExpressVo expressVo){
         return expressService.update(expressVo);
-    }
-
-
-    @ApiOperation("更改快递的状态为1，表示取件完成")
-    @PutMapping("/updateStatus")
-    public boolean updateStatus(@ApiParam("需更改快递的取件码")  @RequestBody String code){
-        return expressService.updateStatus(code);
     }
 
     @ApiOperation("根据id，删除单个快递信息")

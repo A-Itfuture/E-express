@@ -3,6 +3,7 @@ package com.itfuture.e.controller;
 
 import com.itfuture.e.intercept.NotControllerResponseAdvice;
 import com.itfuture.e.pojo.vo.ResultVo;
+import com.itfuture.e.pojo.vo.TableData;
 import com.itfuture.e.pojo.vo.UserVo;
 import com.itfuture.e.valid.addUser;
 import com.itfuture.e.service.UserService;
@@ -24,7 +25,8 @@ import java.util.Map;
  */
 @Api(tags = "用户管理控制器")
 @Slf4j
-@RestController("/user")
+@RestController
+@RequestMapping("/user")
 public class UserController {
     @Autowired
     private UserService userService;
@@ -37,9 +39,10 @@ public class UserController {
 
     @ApiOperation("分页获取所有用户信息")
     @GetMapping("/userListPage")
-    public ResultVo listPage(@RequestParam(required = false,defaultValue = "0") Integer offset,
-                             @RequestParam(required = false,defaultValue = "5") Integer pageNumber){
-        return new ResultVo(userService.findList(true,offset,pageNumber));
+    @NotControllerResponseAdvice
+    public TableData listPage(@RequestParam(required = false,defaultValue = "0") Integer offset,
+                              @RequestParam(required = false,defaultValue = "5") Integer pageNumber){
+        return userService.findList(true,offset,pageNumber);
     }
 
     @ApiOperation("获取所有用户信息")

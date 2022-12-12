@@ -1,8 +1,10 @@
 package com.itfuture.e.service;
 
+import com.itfuture.e.pojo.TokenDTO;
 import com.itfuture.e.pojo.vo.TableData;
 import com.itfuture.e.pojo.vo.UserVo;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +44,13 @@ public interface UserService {
     UserVo findByUserPhone(String userPhone);
 
     /**
+     * 该手机号用户是否存在
+     * @param userPhone
+     * @return
+     */
+    UserVo exitByUserPhone(String userPhone);
+
+    /**
      * 用户的修改
      * @param newUserVo 新的user对象
      * @return 修改的结果
@@ -61,6 +70,39 @@ public interface UserService {
      */
     boolean deleteUserById(int id);
 
+    /**
+     *登录发送验证码
+     * @param userPhone
+     * @return
+     */
+    boolean sendSms(String userPhone);
 
+    /**
+     * 用户登录
+     * @param userPhoneAndCode
+     * @return
+     */
+    String login(String userPhoneAndCode);
 
+    /**
+     *用户基本信息
+     * @param token
+     * @return
+     */
+    TokenDTO userInfo(String token);
+
+    /**
+     * 注销
+     * @param token
+     * @return
+     */
+    String logout(String token);
+
+    /**
+     * 更新发送验证码
+     *
+     * @param userPhone
+     * @return
+     */
+    boolean sendUpdate(String userPhone);
 }

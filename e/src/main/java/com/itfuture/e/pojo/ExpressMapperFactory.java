@@ -39,7 +39,7 @@ public class ExpressMapperFactory {
         mapperFactory.getConverterFactory().registerConverter("outTimeConvert", new BidirectionalConverter<Timestamp,String>() {
             @Override
             public String convertTo(Timestamp timestamp, Type<String> type, MappingContext mappingContext) {
-                return DateFormatUtil.format(timestamp);
+                return timestamp==null?"未出库":DateFormatUtil.format(timestamp);
             }
 
             @Override
@@ -48,9 +48,23 @@ public class ExpressMapperFactory {
             }
         });
 
+        mapperFactory.getConverterFactory().registerConverter("statusConvert", new BidirectionalConverter<Integer,String>() {
+
+            @Override
+            public String convertTo(Integer integer, Type<String> type, MappingContext mappingContext) {
+                return integer==0?"待取件":"已取件";
+            }
+
+            @Override
+            public Integer convertFrom(String s, Type<Integer> type, MappingContext mappingContext) {
+                return "0".equals(s)?0:1;
+            }
+        });
+
         mapperFactory.classMap(Express.class, ExpressVo.class)
                 .fieldMap("inTime","inTime").converter("inTimeConvert").add()
                 .fieldMap("outTime","outTime").converter("outTimeConvert").add()
+                .fieldMap("status","status").converter("statusConvert").add()
                 .byDefault()
                 .register();
     }

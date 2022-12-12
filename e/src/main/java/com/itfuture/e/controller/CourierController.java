@@ -3,10 +3,12 @@ package com.itfuture.e.controller;
 import com.itfuture.e.intercept.NotControllerResponseAdvice;
 import com.itfuture.e.pojo.vo.CourierVo;
 import com.itfuture.e.pojo.vo.ResultVo;
+import com.itfuture.e.pojo.vo.TableData;
 import com.itfuture.e.service.CourierService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import javafx.scene.control.Tab;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +23,8 @@ import java.util.Map;
  */
 @Slf4j
 @Api(tags = "快递员管理控制器")
-@RestController("/courier")
+@RestController
+@RequestMapping("/courier")
 public class CourierController {
     @Autowired
     private CourierService courierService;
@@ -34,9 +37,10 @@ public class CourierController {
 
     @ApiOperation("分页获取所有快递员信息")
     @GetMapping("/courierListPage")
-    public ResultVo listPage(@RequestParam(required = false,defaultValue = "0") Integer offset,
-                             @RequestParam(required = false,defaultValue = "5") Integer pageNumber){
-        return new ResultVo(courierService.findList(true,offset,pageNumber));
+    @NotControllerResponseAdvice
+    public TableData listPage(@RequestParam(required = false,defaultValue = "0") Integer offset,
+                              @RequestParam(required = false,defaultValue = "5") Integer pageNumber){
+        return courierService.findList(true,offset,pageNumber);
     }
 
     @ApiOperation("获取所有快递员信息")
@@ -61,12 +65,14 @@ public class CourierController {
 
     @ApiOperation("更新快递员信息")
     @PutMapping("/updateCourier")
+    @NotControllerResponseAdvice
     public boolean updateCourier(@ApiParam("更改快递员信息的实体")  @RequestBody CourierVo courierVo){
         return courierService.updateCourier(courierVo);
     }
 
     @ApiOperation("更新快递员登陆时间")
     @PutMapping("/updateCourierLoginTime/{id}")
+    @NotControllerResponseAdvice
     public boolean updateLoginTime(@ApiParam("更新的快递员用户id") @PathVariable("id") Integer id){
         return courierService.updateLoginTime(id);
     }

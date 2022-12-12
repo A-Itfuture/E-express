@@ -42,7 +42,7 @@ public class Swagger2Config {
                 .apiInfo(webApiInfo())
                 .select()
                 //可以测试请求头中：输入token
-                .apis(RequestHandlerSelectors.basePackage("com.itfuture.e.controller"))
+                .apis(RequestHandlerSelectors.basePackage("com.itfuture.e"))
                 //.apis(RequestHandlerSelectors.withClassAnnotation(ApiOperation.class))
                 //过滤掉admin路径下的所有页面
                 //.paths(Predicates.and(PathSelectors.regex("/sms/.*")))

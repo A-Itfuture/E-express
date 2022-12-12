@@ -32,9 +32,17 @@ spring:
 #  thymeleaf:
 #    cache: false #配置Thymeleaf缓存，生产环境开启，默认开启
 
+#JWT
+jwt:
+  # 需要拦截的路径,逗号分割 不能带引号
+  verify: /**
+  # 需要放行的路径,逗号分割 不能带引号
+  skip: /swagger-resources/**,/webjars/**,/v2/**,/swagger-ui.html/**,/wxUser/loginSms,/wxUser/login,/admin/**
+  # 管理员-后台权限路径配置
+
 # swagger
 swagger:
-  base-package: 'com.itfuture.controller'
+  base-package: 'com.itfuture'
   base-path: '/**'
   title: '快递E站服务接口'
   description: '快递E站后端服务接口文档'

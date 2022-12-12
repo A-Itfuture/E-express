@@ -64,4 +64,5 @@ public interface CourierService {
      */
     boolean deleteCourierById(int id);
 
+    CourierVo exitByUserPhone(String userPhone);
 }

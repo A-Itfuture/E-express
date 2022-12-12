@@ -4,6 +4,7 @@ package com.itfuture.e.service;
 import com.itfuture.e.pojo.vo.ExpressVo;
 import com.itfuture.e.pojo.vo.TableData;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
 
@@ -105,4 +106,20 @@ public interface ExpressService {
      * @return 删除的结果，true表示成功，false表示失败
      */
     boolean deleteExpressById(int id);
+
+    /**
+     * 二维码内容生成
+     * @param code
+     * @param type
+     * @return
+     */
+    String createQRCode(String code,String type, String token);
+
+    /**
+     * 根据number查询自己快递信息
+     * @param number
+     * @param userPhone
+     * @return
+     */
+    ExpressVo findByNumberAndUserPhone(String number, String userPhone);
 }

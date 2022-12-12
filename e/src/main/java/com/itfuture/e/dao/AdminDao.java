@@ -23,4 +23,13 @@ public interface AdminDao extends BaseMapper<Eadmin> {
      */
     @Select("SELECT password FROM eadmin WHERE user_name =#{userName}")
     List<String> findByUserName(String userName);
+
+    /**
+     * 管理员根据用户名查询
+     * @param userName 登录数据的实体
+     * @param password 登录数据的实体
+     * @return Eadmin对象
+     */
+    @Select("SELECT * FROM eadmin WHERE user_name =#{userName} AND password=#{password}")
+    Eadmin findByUser(String userName,String password);
 }

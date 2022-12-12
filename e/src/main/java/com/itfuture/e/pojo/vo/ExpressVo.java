@@ -17,6 +17,6 @@ public class ExpressVo {
     private String code;
     private String inTime;
     private String outTime;
-    private int status;
+    private String status;
     private String sysPhone;
 }

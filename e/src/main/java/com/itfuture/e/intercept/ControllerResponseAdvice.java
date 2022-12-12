@@ -18,7 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
  * @version：v1.0
  * @date： 2022/11/14 14:51
  */
-@RestControllerAdvice(basePackages = {"com.itfuture.e.controller"})
+@RestControllerAdvice(basePackages = {"com.itfuture.e.controller","com.itfuture.e.wx.controller"})
 public class ControllerResponseAdvice implements ResponseBodyAdvice<Object> {
     /**
      * 当返回类型：是ResultVo就不包装；当不等与 ResultVo 时才进行调用 beforeBodyWrite 方法

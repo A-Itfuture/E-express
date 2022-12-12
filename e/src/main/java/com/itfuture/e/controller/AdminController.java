@@ -2,6 +2,7 @@ package com.itfuture.e.controller;
 
 
 import com.itfuture.e.pojo.Eadmin;
+import com.itfuture.e.pojo.TokenDTO;
 import com.itfuture.e.service.AdminService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -18,21 +19,32 @@ import javax.servlet.http.HttpServletRequest;
  * @date： 2022/11/04 10:34
  */
 @Api(tags = "管理员控制器")
-@RestController("/admin")
+@RestController
+@RequestMapping("/admin")
 public class AdminController {
     @Autowired
     private AdminService adminService;
 
     @ApiOperation("管理员登录后台系统")
-    @PostMapping("/login")
-    public Eadmin login(@ApiParam("用户名密码封装实体") @Validated @RequestBody Eadmin eadmin, HttpServletRequest request){
+    @PostMapping("/loginAdmin")
+    public String login(@ApiParam("用户名密码封装实体") @Validated @RequestBody Eadmin eadmin, HttpServletRequest request){
         String ip = request.getRemoteAddr();//远程ip
         return adminService.login(eadmin,ip);
     }
 
-    @ApiOperation("退出登录")
+    @ApiOperation("管理员基本信息")
+    @PostMapping("/adminInfo")
+    public TokenDTO adminInfo(HttpServletRequest request){
+        String authToken  = request.getHeader("Authorization");
+        String token = authToken.substring("Bearer".length() + 1).trim();
+        return adminService.adminInfo(token);
+    }
+
+    @ApiOperation("管理员注销登录")
     @DeleteMapping("/exitLogin")
-    public boolean exitLogin(){
-        return true;
+    public String exitLogin(HttpServletRequest request){
+        String authToken  = request.getHeader("Authorization");
+        String token = authToken.substring("Bearer".length() + 1).trim();
+        return adminService.exitLogin(token);
     }
 }
